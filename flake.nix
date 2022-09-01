@@ -27,7 +27,7 @@
       (__substring 6 2 longDate)
     ]);
   in {
-    overlays.default = _: prev: rec {
+    overlays = _: prev: rec {
       wlroots-hyprland = prev.wlroots.overrideAttrs (__: {
         version = mkDate (inputs.wlroots.lastModifiedDate or "19700101") + "_" + (inputs.wlroots.shortRev or "dirty");
         src = inputs.wlroots;
@@ -66,8 +66,6 @@
 
     nixosModules.default = import ./nix/module.nix self;
     homeManagerModules.default = import ./nix/hm-module.nix self;
-
-    overlay = throw "Hyprland: .overlay output is deprecated, please use the .overlays.default output";
   };
 
   nixConfig = {
