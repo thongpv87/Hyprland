@@ -27,7 +27,7 @@
       (__substring 6 2 longDate)
     ]);
   in {
-    overlays = _: prev: rec {
+    overlays.default = _: prev: rec {
       wlroots-hyprland = prev.wlroots.overrideAttrs (__: {
         version = mkDate (inputs.wlroots.lastModifiedDate or "19700101") + "_" + (inputs.wlroots.shortRev or "dirty");
         src = inputs.wlroots;
@@ -45,7 +45,8 @@
         mesonFlags = oldAttrs.mesonFlags ++ ["-Dexperimental=true"];
       });
     };
-
+    overlay = overlays;
+    
     packages = genSystems (system:
       (self.overlays.default null pkgsFor.${system})
       // {
