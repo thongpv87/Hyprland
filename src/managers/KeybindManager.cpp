@@ -652,7 +652,7 @@ void CKeybindManager::changeworkspace(std::string args) {
         Debug::log(LOG, "Changed to workspace %i", workspaceToChangeTo);
 
         // focus
-        if (const auto PWINDOW = PWORKSPACETOCHANGETO->m_pLastFocusedWindow; g_pCompositor->windowValidMapped(PWINDOW)) {
+        if (const auto PWINDOW = PWORKSPACETOCHANGETO->getLastFocusedWindow(); PWINDOW) {
             // warp and focus
             if (anotherMonitor)
                 g_pCompositor->warpCursorTo(PWINDOW->m_vRealPosition.vec() + PWINDOW->m_vRealSize.vec() / 2.f);
@@ -1138,18 +1138,7 @@ void CKeybindManager::exitHyprland(std::string argz) {
 }
 
 void CKeybindManager::moveCurrentWorkspaceToMonitor(std::string args) {
-    CMonitor* PMONITOR = nullptr;
-
-    try {
-        if (!isNumber(args) && !isDirection(args)) {
-            PMONITOR = g_pCompositor->getMonitorFromName(args);
-        } else {
-            PMONITOR = isDirection(args) ? g_pCompositor->getMonitorInDirection(args[0]) : g_pCompositor->getMonitorFromID(std::stoi(args));
-        }
-    } catch (std::exception& e) {
-        Debug::log(LOG, "moveCurrentWorkspaceToMonitor: caught exception in monitor", e.what());
-        return;
-    }
+    CMonitor* PMONITOR = g_pCompositor->getMonitorFromString(args);
 
     if (!PMONITOR)
         return;
@@ -1170,19 +1159,7 @@ void CKeybindManager::moveWorkspaceToMonitor(std::string args) {
     std::string workspace = args.substr(0, args.find_first_of(' '));
     std::string monitor = args.substr(args.find_first_of(' ') + 1);
 
-    CMonitor* PMONITOR = nullptr;
-
-    try {
-        if (!isNumber(monitor) && !isDirection(monitor)) {
-            PMONITOR = g_pCompositor->getMonitorFromName(monitor);
-        } else {
-            PMONITOR = isDirection(monitor) ? g_pCompositor->getMonitorInDirection(monitor[0]) : g_pCompositor->getMonitorFromID(std::stoi(monitor));
-        }
-    } catch (std::exception& e) {
-        Debug::log(LOG, "moveWorkspaceToMonitor: caught exception in monitor", e.what());
-        return;
-    }
-    
+    const auto PMONITOR = g_pCompositor->getMonitorFromString(monitor);
 
     if (!PMONITOR){
         Debug::log(ERR, "Ignoring moveWorkspaceToMonitor: monitor doesnt exist");
@@ -1242,7 +1219,7 @@ void CKeybindManager::toggleSpecialWorkspace(std::string args) {
             }
         }
 
-        if (const auto PWINDOW = g_pCompositor->getWorkspaceByID(g_pCompositor->m_pLastMonitor->activeWorkspace)->m_pLastFocusedWindow; g_pCompositor->windowValidMapped(PWINDOW) && PWINDOW->m_iMonitorID == monID)
+        if (const auto PWINDOW = g_pCompositor->getWorkspaceByID(g_pCompositor->m_pLastMonitor->activeWorkspace)->getLastFocusedWindow(); PWINDOW)
             g_pCompositor->focusWindow(PWINDOW);
         else
             g_pInputManager->refocus();
@@ -1260,7 +1237,7 @@ void CKeybindManager::toggleSpecialWorkspace(std::string args) {
         PSPECIALWORKSPACE->startAnim(true, true);
         PSPECIALWORKSPACE->m_iMonitorID = g_pCompositor->m_pLastMonitor->ID;
 
-        if (const auto PWINDOW = PSPECIALWORKSPACE->m_pLastFocusedWindow; g_pCompositor->windowValidMapped(PWINDOW))
+        if (const auto PWINDOW = PSPECIALWORKSPACE->getLastFocusedWindow(); PWINDOW)
             g_pCompositor->focusWindow(PWINDOW);
         else
             g_pInputManager->refocus();
